@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
 from rest_framework.filters import OrderingFilter
@@ -34,10 +33,10 @@ class LessonCreateAPIView(generics.CreateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [AllowAny,~IsModer]
 
-    # def perform_create(self, serializer):
-    #     new_lesson = serializer.save()
-    #     new_lesson.user = self.request.user
-    #     new_lesson.save()
+    def perform_create(self, serializer):
+        new_lesson = serializer.save()
+        new_lesson.user = self.request.user
+        new_lesson.save()
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
@@ -49,19 +48,19 @@ class LessonRetrieveAPIView(generics.RetrieveAPIView):
 class LessonUpdateAPIView(generics.UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [AllowAny|IsOwner | IsModer] #
+    permission_classes = [IsOwner | IsModer]
 
 
 class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [AllowAny | IsModer] # IsAuthenticated
+    permission_classes = [IsAuthenticated | IsModer] # IsAuthenticated
     pagination_class = LessonPaginator
 
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
-    permission_classes = [AllowAny] # IsOwner
+    permission_classes = [IsOwner]
 
 
 class PaymentsViewSet(viewsets.ModelViewSet):
@@ -74,7 +73,7 @@ class PaymentsViewSet(viewsets.ModelViewSet):
 
 class SubscriptionCreateAPIView(generics.CreateAPIView):
     serializer_class = SubscriptionSerializer
-    permission_classes = [AllowAny,~IsModer]
+    permission_classes = [~IsModer]
 
     def perform_create(self, serializer):
         new_lesson = serializer.save()

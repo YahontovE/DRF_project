@@ -1,10 +1,12 @@
+from django.template.defaulttags import url
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+from education import views
 from education.apps import EducationConfig
 from education.views import CourseViewSet, LessonCreateAPIView, LessonRetrieveAPIView, \
     LessonDestroyAPIView, LessonListAPIView, LessonUpdateAPIView, PaymentsViewSet, SubscriptionDestroyAPIView, \
-    SubscriptionCreateAPIView, SubscriptionListAPIView
+    SubscriptionCreateAPIView, SubscriptionListAPIView, GetPaymentView
 
 app_name = EducationConfig.name
 
@@ -23,5 +25,6 @@ urlpatterns = [
     path('subs/create', SubscriptionCreateAPIView.as_view(), name='create_subs'),
     path('subs/delete/<int:pk>/', SubscriptionDestroyAPIView.as_view(), name='subs_delete'),
     path('subs/', SubscriptionListAPIView.as_view(), name='subs_list'),
+    path('payment/<str:payment_id>/', GetPaymentView.as_view(), name='payment_get'),
 
 ] + router.urls

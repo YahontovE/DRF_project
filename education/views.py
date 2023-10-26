@@ -1,12 +1,17 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
+from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from config.settings import SECRET_KEY_STRIPE
 from education.models import Course, Lesson, Payments, Subscription
 from education.paginators import LessonPaginator, CoursePaginator
 from education.permissions import IsModer, IsOwner
 from education.serializers import CourseSerializer, LessonSerializer, PaymentsSerializer, SubscriptionSerializer
+import stripe
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -67,9 +72,44 @@ class PaymentsViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentsSerializer
     queryset = Payments.objects.all()
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ('course', 'lesson', 'payment_method')
+    #filterset_fields = ('course', 'lesson', 'payment_method')
     ordering_fields = ['date']
 
+    def perform_create(self, serializer):
+        payment = serializer.save()
+        payment.user = self.request.user
+        payment.save()
+        return super().perform_create(serializer)
+
+
+    def payment_create(self):
+        if self.action == 'create':
+            stripe.api_key = 'sk_test_51O5BP8HzMiqB6nM069g2B0lGlWOfGueOBi4XPZTqICzTLGmqOBaL7oUjrUrJNOBSs4sTrZhuGa4VEe1T5F9vlGTK00LgpSWZG1'
+
+            pay=stripe.PaymentIntent.create(
+                amount=self.request.payment_sum,
+                currency="usd",
+                automatic_payment_methods={"enabled": True},
+                course=self.request.course,
+                user=self.request.user,
+
+            )
+            print(pay.client_secret)
+            pay.save()
+            return Response(status=status.HTTP_200_OK, data=pay)
+
+class GetPaymentView(APIView):
+    def get_view_name(self,request,payment_id):
+        stripe.api_key = 'sk_test_51O5BP8HzMiqB6nM069g2B0lGlWOfGueOBi4XPZTqICzTLGmqOBaL7oUjrUrJNOBSs4sTrZhuGa4VEe1T5F9vlGTK00LgpSWZG1'
+        payment_intent=stripe.PaymentIntent.retrieve(payment_id)
+        payment_intent.save()
+        return Response({
+            'status': payment_intent.status, })
+
+    # def get(self, request, payment_id):
+    #     payment_intent = stripe.PaymentIntent.retrieve(payment_id)
+    #     return Response({
+    #         'status': payment_intent.status, })
 
 class SubscriptionCreateAPIView(generics.CreateAPIView):
     serializer_class = SubscriptionSerializer

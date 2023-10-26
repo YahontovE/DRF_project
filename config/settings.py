@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
+    'drf_yasg',
 
     'users',
     'education',
@@ -146,6 +147,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ]
 }
+
+
+SECRET_KEY_STRIPE='sk_test_51O5BP8HzMiqB6nM069g2B0lGlWOfGueOBi4XPZTqICzTLGmqOBaL7oUjrUrJNOBSs4sTrZhuGa4VEe1T5F9vlGTK00LgpSWZG1'
+PUBLISHABLE_KEY_STRIPE='pk_test_51O5BP8HzMiqB6nM0tiEwWpaEtekk083saezMIppYZfBW2fAzqfBtFQJZcFcLnguP3RdcIhCXskaV3CDVKrFJlRK800YCAOPvbC'
 
 
 # Настройки срока действия токенов

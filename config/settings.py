@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     'drf_yasg',
+    'django_celery_beat',
 
     'users',
     'education',
@@ -87,6 +89,7 @@ DATABASES = {
         'NAME': os.getenv('DATABASE_NAME'),
         'USER': os.getenv('DATABASE_USER'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': 'db'
     }
 }
 
@@ -134,7 +137,6 @@ AUTH_USER_MODEL = 'users.User'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Настройки JWT-токенов
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
@@ -148,13 +150,33 @@ REST_FRAMEWORK = {
     ]
 }
 
-
-SECRET_KEY_STRIPE='sk_test_51O5BP8HzMiqB6nM069g2B0lGlWOfGueOBi4XPZTqICzTLGmqOBaL7oUjrUrJNOBSs4sTrZhuGa4VEe1T5F9vlGTK00LgpSWZG1'
-PUBLISHABLE_KEY_STRIPE='pk_test_51O5BP8HzMiqB6nM0tiEwWpaEtekk083saezMIppYZfBW2fAzqfBtFQJZcFcLnguP3RdcIhCXskaV3CDVKrFJlRK800YCAOPvbC'
-
-
 # Настройки срока действия токенов
 # SIMPLE_JWT = {
 #     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
 #     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 # }
+
+SECRET_KEY_STRIPE = 'sk_test_51O5BP8HzMiqB6nM069g2B0lGlWOfGueOBi4XPZTqICzTLGmqOBaL7oUjrUrJNOBSs4sTrZhuGa4VEe1T5F9vlGTK00LgpSWZG1'
+PUBLISHABLE_KEY_STRIPE = 'pk_test_51O5BP8HzMiqB6nM0tiEwWpaEtekk083saezMIppYZfBW2fAzqfBtFQJZcFcLnguP3RdcIhCXskaV3CDVKrFJlRK800YCAOPvbC'
+
+
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_TIMEZONE = "Europe/Moscow"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'noreply@oscarbot.ru'
+EMAIL_HOST_PASSWORD = 'AsTSNVv7pun9'
+EMAIL_USE_SSL = True
+
+# Настройки для Celery
+CELERY_BEAT_SCHEDULE = {
+    'block_inactive_user': {
+        'task': 'users.tasks.block_inactive_user',
+        'schedule': timedelta(minutes=1),
+    },
+}
